@@ -38,10 +38,12 @@ class CloudWatchElasticLoader {
     String clusterName
     boolean deleteData
 
+    private String awsProfile
     private TransportClient esClient
     private AWSLogsClient awsLogsClient
 
     def run() {
+        setupAWS()
         setupElasticsearch()
         loadInstances()
         processLogs()
@@ -95,6 +97,12 @@ class CloudWatchElasticLoader {
             return awsLogsClient.getLogEvents(r)
         } catch (any) {
             println("Unable to process logs for ${r.logStreamName} / ${r.logGroupName} : ${any.message}")
+        }
+    }
+
+    private def setupAWS() {
+        if (awsProfile) {
+            System.setProperty('aws.profile', awsProfile)
         }
     }
 
@@ -154,7 +162,6 @@ class CloudWatchElasticLoader {
         // MAPPING DONE
         createIndexRequestBuilder.execute().actionGet()
     }
-
 }
 
 def main(String[] args) {
@@ -164,6 +171,7 @@ def main(String[] args) {
 
     def cli = new CliBuilder(usage: 'groovy cloudwatch_elk.groovy [options]')
     cli.with {
+        a longOpt: 'profile','the AWS profile name to use', args: 1
         n longOpt: 'ec2Name', 'the EC2 name to retrieve instances', args: 1, required: true
         g longOpt: 'logGroup', 'the CloudWatch log group of the instances', args: 1, required: true
         l longOpt: 'lastMinutes', 'specify the number of minutes to extract logs until now', args: 1
@@ -179,7 +187,9 @@ def main(String[] args) {
     def options = cli.parse(args)
 
     if (options) {
-        new CloudWatchElasticLoader(ec2Name: options.n,
+        new CloudWatchElasticLoader(
+                awsProfile: options.a,
+                ec2Name: options.n,
                 logGroup: options.g,
                 from: options.f ? Date.parse("dd/MM/yy hh:mm", options.f).time : null,
                 to: options.t ? Date.parse("dd/MM/yy hh:mm", options.t).time : null,

@@ -35,6 +35,7 @@ Use the Groovy CLI to load your logs. Run it without any parameter to see how to
 
 ```shell
 usage: groovy cloudwatch_elk.groovy [options]
+ -a,--profile <arg>       the AWS profile name to use
  -c,--cluster <arg>       the Elasticsearch cluster name, default
                           'cloudwatch-cluster'
  -d,--deleteData <arg>    when 'true' deletes the index if exists, default
