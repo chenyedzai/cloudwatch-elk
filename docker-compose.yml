@@ -1,0 +1,21 @@
+version: '2'
+services:
+  elasticsearch:
+    image: elasticsearch:2.4.1
+    command: elasticsearch -Des.network.host=0.0.0.0 -Des.cluster.name=cloudwatch-cluster
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  logstash:
+    image: logstash:2.4
+    ports:
+      - "5000:5000"
+    depends_on:
+      - elasticsearch
+  kibana:
+    image: kibana:4.6.1
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+

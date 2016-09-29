@@ -13,16 +13,10 @@ The goal of this project is to easy setup an ELK stack and load the logs we need
 * [Docker](https://docs.docker.com/engine/installation/)
 * [Groovy](http://www.groovy-lang.org/download.html)
 
-## Setup ELK
+## Setup
 
-To setup ELK:
- 
-* ```git clone https://github.com/deviantony/docker-elk```
-* Edit $DOCKER_ELK_HOME/docker-compose.yml and change the Elasticsearch cluster name: 
-
-```command: elasticsearch -Des.network.host=0.0.0.0 -Des.cluster.name=cloudwatch-cluster ```
-
-* Start the container ```docker-compose up```
+* Clone this repository
+* Start the ELK stack ```docker-compose up```
 * Access Kibana via web browser ```http://$docker_machine_ip:5601```. If everything is setup correctly you should see the view below
 
 ![Kibana Home](/images/kibana.png?raw=true "Kibana Home")

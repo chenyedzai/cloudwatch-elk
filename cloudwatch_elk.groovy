@@ -21,7 +21,7 @@ import groovyx.gpars.ParallelEnhancer
 
 @Grapes([
         @Grab("com.amazonaws:aws-java-sdk:1.11.36"),
-        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '2.4.0'),
+        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '2.4.1'),
         @Grab(group = 'org.codehaus.gpars', module = 'gpars', version = '1.2.1')
 ])
 
