@@ -34,7 +34,7 @@ usage: groovy cloudwatch_elk.groovy [options]
                           'cloudwatch-cluster'
  -d,--deleteData <arg>    when 'true' deletes the index if exists, default
                           'true'
- -e,--elasticHost <arg>   the Elasticsearch hostname / ip
+ -e,--elasticHost <arg>   the Elasticsearch hostname / ip, default 'localhost'
  -f,--from <arg>          a point in time expressed as dd/MM/yy hh:mm
  -g,--logGroup <arg>      the CloudWatch log group of the instances
  -i,--instances <arg>     the instances to extract log from, separated by
@@ -50,15 +50,15 @@ usage: groovy cloudwatch_elk.groovy [options]
 
 Load the last hour of logs from all the instances tagged with name 'my-service':
 
-```groovy cloudwatch_elk.groovy -e $docker_host -g $logGroupName -n my-service -l 60```
+```groovy cloudwatch_elk.groovy -g $logGroupName -n my-service -l 60```
 
 Load the last half an hour of logs from a set of instances tagged with name 'my-service':
 
-```groovy cloudwatch_elk.groovy -e $docker_host -g $logGroupName -n my-service -i $instance1,$instance2,$instance3 -l 30```
+```groovy cloudwatch_elk.groovy -g $logGroupName -n my-service -i $instance1,$instance2,$instance3 -l 30```
 
 Load the logs between 2 specific date times from all the instances tagged with name 'my-service':
 
-```groovy cloudwatch_elk.groovy -e $docker_host -g $logGroupName -n my-service -f '27/09/2016 08:00' -t '27/09/2016 09:00'```
+```groovy cloudwatch_elk.groovy -g $logGroupName -n my-service -f '27/09/2016 08:00' -t '27/09/2016 09:00'```
 
 ## Analyse your logs
 

@@ -165,20 +165,21 @@ class CloudWatchElasticLoader {
 }
 
 def main(String[] args) {
+    final ES_HOST_DEFAULT = 'localhost'
     final String ES_CLUSTER_DEFAULT = 'cloudwatch-cluster'
     final int ES_PORT_DEFAULT = 9300
     final boolean ES_DELETE_DATA_DEFAULT = true
 
     def cli = new CliBuilder(usage: 'groovy cloudwatch_elk.groovy [options]')
     cli.with {
-        a longOpt: 'profile','the AWS profile name to use', args: 1
-        n longOpt: 'ec2Name', 'the EC2 name to retrieve instances', args: 1, required: true
-        g longOpt: 'logGroup', 'the CloudWatch log group of the instances', args: 1, required: true
-        l longOpt: 'lastMinutes', 'specify the number of minutes to extract logs until now', args: 1
-        f longOpt: 'from', 'a point in time expressed as dd/MM/yy hh:mm', args: 1
-        t longOpt: 'to', 'a point in time expressed as dd/MM/yy hh:mm', args: 1
-        i longOpt: 'instances', 'the instances to extract log from, separated by comma', args: Option.UNLIMITED_VALUES, valueSeparator: 'a' as char
-        e longOpt: 'elasticHost', 'the Elasticsearch hostname / ip', args: 1, required: true
+        a longOpt: 'profile',"the AWS profile name to use", args: 1
+        n longOpt: 'ec2Name', "the EC2 name to retrieve instances", args: 1, required: true
+        g longOpt: 'logGroup', "the CloudWatch log group of the instances", args: 1, required: true
+        l longOpt: 'lastMinutes', "specify the number of minutes to extract logs until now", args: 1
+        f longOpt: 'from', "a point in time expressed as dd/MM/yy hh:mm", args: 1
+        t longOpt: 'to', "a point in time expressed as dd/MM/yy hh:mm", args: 1
+        i longOpt: 'instances', "the instances to extract log from, separated by comma", args: Option.UNLIMITED_VALUES, valueSeparator: 'a' as char
+        e longOpt: 'elasticHost', "the Elasticsearch hostname / ip, default '$ES_HOST_DEFAULT'", args: 1
         p longOpt: 'elasticPort', "the Elasticsearch port, default '$ES_PORT_DEFAULT'", args: 1
         c longOpt: 'cluster', "the Elasticsearch cluster name, default '$ES_CLUSTER_DEFAULT'", args: 1
         d longOpt: 'deleteData', "when 'true' deletes the index if exists, default '$ES_DELETE_DATA_DEFAULT'", args: 1
@@ -195,7 +196,7 @@ def main(String[] args) {
                 to: options.t ? Date.parse("dd/MM/yy hh:mm", options.t).time : null,
                 instances: options.i ?: null,
                 lastMinutes: options.l ? options.l as int : null,
-                elasticHost: options.e,
+                elasticHost: options.e ?: ES_HOST_DEFAULT,
                 elasticPort: options.p ? options.p as int : ES_PORT_DEFAULT,
                 clusterName: options.c ?: ES_CLUSTER_DEFAULT,
                 deleteData: options.d ? options.d as boolean : ES_DELETE_DATA_DEFAULT)
