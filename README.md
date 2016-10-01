@@ -76,10 +76,3 @@ Click on Discover and start analysing your logs.
 
 Logs are persisted in the ELK container. When you are done with your analysis execute ```docker-compose down``` to destroy the
 container.
-
-
-
- 
- 
- 
- 

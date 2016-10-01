@@ -17,12 +17,16 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.xcontent.XContentBuilder
 import org.elasticsearch.common.xcontent.XContentFactory
-import groovyx.gpars.ParallelEnhancer
+import rx.AsyncEmitter
+import rx.Observable
+import rx.schedulers.Schedulers
+
+import java.util.concurrent.CountDownLatch
 
 @Grapes([
+        @Grab(group = 'io.reactivex', module = 'rxjava', version = '1.2.0'),
         @Grab("com.amazonaws:aws-java-sdk:1.11.36"),
-        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '2.4.1'),
-        @Grab(group = 'org.codehaus.gpars', module = 'gpars', version = '1.2.1')
+        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '2.4.1')
 ])
 
 class CloudWatchElasticLoader {
@@ -46,18 +50,73 @@ class CloudWatchElasticLoader {
         setupAWS()
         setupElasticsearch()
         loadInstances()
-        processLogs()
+        processLogsRx()
     }
 
-    private def processLogs() {
+    private def processLogsRx() {
         awsLogsClient = new AWSLogsClient()
-        ParallelEnhancer.enhanceInstance(instances)
-        instances.eachParallel { String i -> processLogs(i) }
+
+        final CountDownLatch latch = new CountDownLatch(1)
+        Observable
+                .from(instances)
+                .flatMap {
+                    Observable.just(it).map { i -> prepareRequest(i) }
+                            .flatMap { r -> logEventsResult(r) }
+                            .flatMap { t -> esIndexRequests(t.first, t.second) }
+                            .subscribeOn(Schedulers.io())
+                            .buffer(2000)
+                            .map { r -> buildBulk(r) }
+                            .filter { b -> b.numberOfActions() > 0 }
+        }.subscribe({ b -> b.execute().actionGet() },
+                { throwable -> throwable.printStackTrace() },
+                { -> latch.countDown() })
+
+        latch.await()
     }
 
-    private def processLogs(String instance) {
-        println("Processing logs for instance $instance")
+    private Observable<Tuple2<String, GetLogEventsResult>> logEventsResult(GetLogEventsRequest request) {
+        Observable.fromEmitter({ emitter ->
 
+            def oldToken
+            while (true) {
+                println(Thread.currentThread().getName() + " Load logs with request $request")
+                GetLogEventsResult eventsResult = getLogEvents(request)
+                emitter.onNext(new Tuple2(request.logStreamName, eventsResult))
+
+                if (!eventsResult.nextForwardToken || eventsResult.nextForwardToken == oldToken) break
+                oldToken = eventsResult.nextForwardToken
+                request.setNextToken(eventsResult.nextForwardToken)
+                request.setStartTime(null)
+                request.setEndTime(null)
+            }
+
+            emitter.onCompleted()
+        }, AsyncEmitter.BackpressureMode.BUFFER)
+    }
+
+    private Observable<IndexRequest> esIndexRequests(String instance, GetLogEventsResult eventsResult) {
+        Observable.fromEmitter({ emitter ->
+            println(Thread.currentThread().getName() + " Creating index requests for ${eventsResult.events.size()} events")
+            eventsResult.events.each { evt ->
+                evt.message.split("\n").each { m ->
+                    IndexRequest indexRequest = new IndexRequest(ec2Name, "log")
+                            .source([timestamp: evt.timestamp, message: m, instance: instance])
+                    emitter.onNext(indexRequest)
+                }
+            }
+
+
+            emitter.onCompleted()
+        }, AsyncEmitter.BackpressureMode.BUFFER)
+    }
+
+    private BulkRequestBuilder buildBulk(List<IndexRequest> requests) {
+        BulkRequestBuilder bulk = esClient.prepareBulk()
+        requests.forEach { ir -> bulk.add(ir) }
+        bulk
+    }
+
+    private GetLogEventsRequest prepareRequest(String instance) {
         GetLogEventsRequest request = new GetLogEventsRequest(logGroup, instance)
         if (from) request.setStartTime(from)
         if (to) request.setEndTime(to)
@@ -67,29 +126,7 @@ class CloudWatchElasticLoader {
             }
         }
         request.setStartFromHead(true)
-
-        def oldToken
-        while (true) {
-            println("Extract and load logs for $instance with token ${oldToken ?: "None"}")
-            def eventsResult = getLogEvents(request)
-            BulkRequestBuilder bulk = esClient.prepareBulk()
-            eventsResult.events.each { evt ->
-                evt.message.split("\n").each { m ->
-                    IndexRequest indexRequest = new IndexRequest(ec2Name, "log")
-                            .source([timestamp: evt.timestamp, message: m, instance: instance])
-                    bulk.add(indexRequest)
-                }
-            }
-            if (bulk.numberOfActions()) {
-                bulk.execute().actionGet()
-            }
-
-            if (!eventsResult.nextForwardToken || eventsResult.nextForwardToken == oldToken) break
-            oldToken = eventsResult.nextForwardToken
-            request.setNextToken(eventsResult.nextForwardToken)
-            request.setStartTime(null)
-            request.setEndTime(null)
-        }
+        request
     }
 
     GetLogEventsResult getLogEvents(GetLogEventsRequest r) {
@@ -172,7 +209,7 @@ def main(String[] args) {
 
     def cli = new CliBuilder(usage: 'groovy cloudwatch_elk.groovy [options]')
     cli.with {
-        a longOpt: 'profile',"the AWS profile name to use", args: 1
+        a longOpt: 'profile', "the AWS profile name to use", args: 1
         n longOpt: 'ec2Name', "the EC2 name to retrieve instances", args: 1, required: true
         g longOpt: 'logGroup', "the CloudWatch log group of the instances", args: 1, required: true
         l longOpt: 'lastMinutes', "specify the number of minutes to extract logs until now", args: 1
