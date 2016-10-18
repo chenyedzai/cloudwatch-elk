@@ -1,3 +1,5 @@
+![Gilt Tech logo](/assets/gilt-tech-logo.png?raw=true "Gilt Tech")
+
 # AWS CloudWatch to ELK
 
 ```AWS CloudWatch to ELK``` is a command line interface (CLI) to extract events from Amazon CloudWatch logs and load them into a 
@@ -19,7 +21,7 @@ The goal of this project is to easy setup an ELK stack and load the logs we need
 * Start the ELK stack ```docker-compose up```
 * Access Kibana via web browser ```http://$docker_machine_ip:5601```. If everything is setup correctly you should see the view below
 
-![Kibana Home](/images/kibana.png?raw=true "Kibana Home")
+![Kibana Home](/assets/kibana.png?raw=true "Kibana Home")
 
 ## Load your logs
 
