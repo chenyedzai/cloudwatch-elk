@@ -17,6 +17,7 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.xcontent.XContentBuilder
 import org.elasticsearch.common.xcontent.XContentFactory
+import org.elasticsearch.transport.client.PreBuiltTransportClient
 import rx.AsyncEmitter
 import rx.Observable
 import rx.schedulers.Schedulers
@@ -26,7 +27,10 @@ import java.util.concurrent.CountDownLatch
 @Grapes([
         @Grab(group = 'io.reactivex', module = 'rxjava', version = '1.2.0'),
         @Grab("com.amazonaws:aws-java-sdk:1.11.36"),
-        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '2.4.1')
+        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '5.0.1'),
+        @Grab(group = 'org.elasticsearch.client', module = 'transport', version = '5.0.1'),
+        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-api', version = '2.6.2'),
+        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-core', version = '2.6.2')
 ])
 
 class CloudWatchElasticLoader {
@@ -158,10 +162,10 @@ class CloudWatchElasticLoader {
 
     private def setupElasticsearch() {
         println("Setup Elasticsearch")
-        Settings.Builder settings = Settings.settingsBuilder()
+        Settings.Builder settings = Settings.builder()
         settings.put("cluster.name", clusterName)
         settings.put("client.transport.sniff", false)
-        esClient = TransportClient.builder().settings(settings).build()
+        esClient = new PreBuiltTransportClient(settings.build())
         esClient.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(elasticHost, elasticPort)))
 
         ClusterHealthResponse actionGet = esClient.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet()
