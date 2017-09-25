@@ -26,11 +26,11 @@ import java.util.concurrent.CountDownLatch
 
 @Grapes([
         @Grab(group = 'io.reactivex', module = 'rxjava', version = '1.2.0'),
-        @Grab("com.amazonaws:aws-java-sdk:1.11.36"),
-        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '5.0.1'),
-        @Grab(group = 'org.elasticsearch.client', module = 'transport', version = '5.0.1'),
-        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-api', version = '2.6.2'),
-        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-core', version = '2.6.2')
+        @Grab("com.amazonaws:aws-java-sdk:1.11.202"),
+        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '5.6.1'),
+        @Grab(group = 'org.elasticsearch.client', module = 'transport', version = '5.6.1'),
+        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-api', version = '2.9.0'),
+        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-core', version = '2.9.0')
 ])
 
 class CloudWatchElasticLoader {
