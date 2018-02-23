@@ -236,7 +236,7 @@ def main(String[] args) {
                 from: options.f ? Date.parse("dd/MM/yy hh:mm", options.f).time : null,
                 to: options.t ? Date.parse("dd/MM/yy hh:mm", options.t).time : null,
                 instances: options.i ?: null,
-                lastMinutes: options.l ? options.l as int : null,
+                lastMinutes: options.l ? options.l as int : 0,
                 elasticHost: options.e ?: ES_HOST_DEFAULT,
                 elasticPort: options.p ? options.p as int : ES_PORT_DEFAULT,
                 clusterName: options.c ?: ES_CLUSTER_DEFAULT,
