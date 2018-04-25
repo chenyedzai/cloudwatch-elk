@@ -1,19 +1,16 @@
-version: '2'
+version: '3.5'
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.1
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.4
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      - 9200:9200
+      - 9300:9300
     environment:
       - cluster.name=cloudwatch-cluster
       - bootstrap.memory_lock=true
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
       - discovery.zen.minimum_master_nodes=1
-      - xpack.security.enabled=false
-      - xpack.graph.enabled=false
-      - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
@@ -22,19 +19,18 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    mem_limit: 1g
     cap_add:
       - IPC_LOCK
   logstash:
-    image: docker.elastic.co/logstash/logstash:5.6.1
+    image: docker.elastic.co/logstash/logstash-oss:6.2.4
     ports:
-      - "5000:5000"
+      - 5000:5000
     depends_on:
       - elasticsearch
   kibana:
-    image: docker.elastic.co/kibana/kibana:5.6.1
+    image: docker.elastic.co/kibana/kibana-oss:6.2.4
     ports:
-      - "5601:5601"
+      - 5601:5601
     depends_on:
       - elasticsearch
 

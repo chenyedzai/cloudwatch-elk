@@ -14,7 +14,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder
 import org.elasticsearch.action.index.IndexRequest
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.settings.Settings
-import org.elasticsearch.common.transport.InetSocketTransportAddress
+import org.elasticsearch.common.transport.TransportAddress
 import org.elasticsearch.common.xcontent.XContentBuilder
 import org.elasticsearch.common.xcontent.XContentFactory
 import org.elasticsearch.transport.client.PreBuiltTransportClient
@@ -27,10 +27,9 @@ import java.util.concurrent.CountDownLatch
 @Grapes([
         @Grab(group = 'io.reactivex', module = 'rxjava', version = '1.2.0'),
         @Grab("com.amazonaws:aws-java-sdk:1.11.202"),
-        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '5.6.1'),
-        @Grab(group = 'org.elasticsearch.client', module = 'transport', version = '5.6.1'),
-        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-api', version = '2.9.0'),
-        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-core', version = '2.9.0')
+        @Grab(group = 'org.elasticsearch', module = 'elasticsearch', version = '6.2.4'),
+        @Grab(group = 'org.elasticsearch.client', module = 'transport', version = '6.2.4'),
+        @Grab(group = 'org.apache.logging.log4j', module = 'log4j-core', version = '2.9.1')
 ])
 
 class CloudWatchElasticLoader {
@@ -166,7 +165,7 @@ class CloudWatchElasticLoader {
         settings.put("cluster.name", clusterName)
         settings.put("client.transport.sniff", false)
         esClient = new PreBuiltTransportClient(settings.build())
-        esClient.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(elasticHost, elasticPort)))
+        esClient.addTransportAddress(new TransportAddress(new InetSocketAddress(elasticHost, elasticPort)))
 
         ClusterHealthResponse actionGet = esClient.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet()
         println("ElasticSearch Health Status $actionGet")
@@ -189,11 +188,10 @@ class CloudWatchElasticLoader {
                                 .field("type", "date")
                             .endObject()
                             .startObject("message")
-                                .field("type", "string")
+                                .field("type", "text")
                             .endObject()
                             .startObject("instance")
-                                .field("type", "string")
-                                .field("index", "not_analyzed")
+                                .field("type", "keyword")
                             .endObject()
                         .endObject()
                     .endObject()

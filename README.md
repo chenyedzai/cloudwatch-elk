@@ -67,10 +67,10 @@ Load the logs between 2 specific date times from all the instances tagged with n
 Setup Kibana to analyse your logs:
 
 * Access Kibana
-* Select ```Settings``` -> ```Indices``` -> ```Configure an index pattern```
-* Set the ec2 name used to extract the logs in the ```Index name or pattern``` field
-* Kibana will fetch the index mapping and propose ```timestamp``` as Time-field name
-* Click on Create and ... you are good to go!
+* Select ```Set up index patterns```
+* Set the ec2 name used to extract the logs in the ```Index pattern``` field
+* Kibana will fetch the index mapping and propose ```timestamp``` as Time Filter field name
+* Click on Create Index Pattern and ... you are good to go!
 
 Click on Discover and start analysing your logs.
 
