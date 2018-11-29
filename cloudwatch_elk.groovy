@@ -203,7 +203,7 @@ class CloudWatchElasticLoader {
     }
 }
 
-def main(String[] args) {
+def app_main(String[] args) {
     final ES_HOST_DEFAULT = 'localhost'
     final String ES_CLUSTER_DEFAULT = 'cloudwatch-cluster'
     final int ES_PORT_DEFAULT = 9300
@@ -243,4 +243,4 @@ def main(String[] args) {
     }
 }
 
-main(args)
+app_main(args)
